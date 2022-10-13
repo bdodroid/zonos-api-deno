@@ -11,13 +11,13 @@ class Zonos {
     constructor(config: ZonosConfig){
         this.config = config;
         if(!config.apiUrl){ 
-            if(!config.apiVersion){ this.config.apiVersion = "1"; }
+            if(!config.apiVersion){ this.config.apiVersion = "2"; }
             this.config.apiUrl = `https://api.iglobalstores.com/v${this.config.apiVersion?.toString()}`; 
         }
     }
 
     private buildApiUrl(config: ZonosConfig){
-        if(!config.apiVersion){ this.config.apiVersion = "1"; }
+        if(!config.apiVersion){ this.config.apiVersion = "2"; }
         this.config.apiUrl = `https://api.iglobalstores.com/v${this.config.apiVersion?.toString()}`; 
         
     }
@@ -27,15 +27,17 @@ class Zonos {
         this.buildApiUrl(this.config);
     }
 
-    async apiCall(path: string, body: any){
+    async directApiCall(path: string, body: any, method?: string){
         body.store = this.config.apiKey.toString();
         body.secret = this.config.apiSecret;
+
+        if(!method){ method = "POST"; }
 
         const apiResponse = await fetch(`${this.config.apiUrl}/${path}`,{
             headers: {
               "Content-Type": "application/json"
             },
-            method: "POST",
+            method: method,
             body: JSON.stringify(body),
           })
           .then(result => result.json())
@@ -67,21 +69,21 @@ class Zonos {
         returns the order information for a specific order.
         can search based off the zonos order id, or the merchants reference id if one was passed in the checkout create call.
     */
-    async getOrder(orderId?: string | number, referenceId?: string){
-        if(!orderId && !referenceId){ return { "error": "orderId or referenceId is required" }; }
-        // TODO: add option to get by referenceId instead of id
+    async getOrder(id: string | number, isReferenceId?: boolean){
+        if(!id){ return { "error": "orderId or referenceId is required" }; }
+
         const searchParamiters: {
             orderId?: string;
             referenceId?: string;
         } = {};
-
-        if(orderId){
-            searchParamiters.orderId = orderId.toString();
-        }else if(referenceId){
-            searchParamiters.referenceId = referenceId.toString();
+        
+        if(isReferenceId){ 
+            searchParamiters.referenceId = id.toString();
+        }else{
+            searchParamiters.orderId = id.toString();
         }
 
-        return await this.apiCall(
+        return await this.directApiCall(
             "orderDetail",
             searchParamiters
         );
@@ -91,8 +93,10 @@ class Zonos {
         GetOrders
         Returns a list of orders that have been created from your checkouts.
     */
-    async getOrders(statuses: boolean, sinceDate: string){ 
-        return await this.apiCall(
+    async getOrders(sinceDate: string, statuses: boolean){ 
+        if(!statuses){ statuses = false; }
+        
+        return await this.directApiCall(
             "orderNumbers",
             {
                 "statuses": statuses,
@@ -120,7 +124,7 @@ class Zonos {
 
         this.setVersion(1);
         // TODO: make status an enum
-        return await this.apiCall(
+        return await this.directApiCall(
             "updateVendorOrderStatus",
             {
                 "orderId": orderId.toString(),
@@ -136,7 +140,7 @@ class Zonos {
     */
     async updateOrderNumber(orderId: string | number, merchantOrderId: string | number){ // working
         this.setVersion(1);
-        return await this.apiCall(
+        return await this.directApiCall(
             "updateMerchantOrderId",
             {
                 "orderId": orderId.toString(),
@@ -151,7 +155,7 @@ class Zonos {
     */
     async updateOrderTracking(orderId: string | number, trackingNumber: string){
         this.setVersion(2);
-        return await this.apiCall(
+        return await this.directApiCall(
             "setShipmentTracking",
             {
                 "orderId": orderId.toString(),
@@ -173,7 +177,7 @@ class Zonos {
         if(!cart.storeId){ cart.storeId = this.config.apiKey.toString(); }
         if(!countryCode){ countryCode = ""; }
 
-        const tempCart = await this.apiCall(
+        const tempCart = await this.directApiCall(
             "createTempCart",
             cart
         );
