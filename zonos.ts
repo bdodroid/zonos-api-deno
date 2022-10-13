@@ -28,8 +28,8 @@ class Zonos {
     }
 
     async directApiCall(path: string, body: any, method?: string){
-        body.store = this.config.apiKey.toString();
-        body.secret = this.config.apiSecret;
+        body.store = this.config.account_number.toString();
+        body.secret = this.config.api_key;
 
         if(!method){ method = "POST"; }
 
@@ -95,7 +95,7 @@ class Zonos {
     */
     async getOrders(sinceDate: string, statuses: boolean){ 
         if(!statuses){ statuses = false; }
-        
+
         return await this.directApiCall(
             "orderNumbers",
             {
@@ -174,7 +174,7 @@ class Zonos {
     */
     async createCheckout(cart: ZonosCart, countryCode?: string){
         this.setVersion(1);
-        if(!cart.storeId){ cart.storeId = this.config.apiKey.toString(); }
+        if(!cart.storeId){ cart.storeId = this.config.account_number.toString(); }
         if(!countryCode){ countryCode = ""; }
 
         const tempCart = await this.directApiCall(
