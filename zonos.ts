@@ -6,7 +6,7 @@ import { ZonosConfig } from "./types/zonosConfig.ts";
     A basic integration with the zonos system. 
     This will allow you to quickly get started with our API and start creating and managing orders.
 */
-class Zonos {
+export class Zonos {
     private config: ZonosConfig;
     constructor(config: ZonosConfig){
         this.config = config;
@@ -195,4 +195,4 @@ class Zonos {
     /* end CheckoutApi */
 }
 
-export default Zonos;
+// export default Zonos;
