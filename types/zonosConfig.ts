@@ -1,6 +1,6 @@
 type ZonosConfig = {
-    apiKey: string | number;
-    apiSecret: string;
+    account_number: string | number;
+    api_key: string;
     apiUrl?: string;
     apiVersion?: string | number;
   };
