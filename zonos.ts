@@ -193,6 +193,8 @@ export class Zonos {
     
 
     /* end CheckoutApi */
+
+    // TODO: add a verify api call we can make to return if the api key is valid
 }
 
 // export default Zonos;
