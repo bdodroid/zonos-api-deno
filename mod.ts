@@ -1,4 +1,4 @@
-import Zonos from "./zonos.ts";
-import ZonosConfig from "./types/zonosConfig.ts";
-
-export { Zonos, ZonosConfig };
+export Zonos from "./zonos.ts";
+export type{
+    ZonosConfig
+}  from "./types/zonosConfig.ts";
