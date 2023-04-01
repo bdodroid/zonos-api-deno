@@ -93,18 +93,20 @@ export class Zonos {
         GetOrders
         Returns a list of orders that have been created from your checkouts.
     */
-    async getOrders(sinceDate: string, statuses: boolean){ 
-        if(!statuses){ statuses = false; }
-
+    async getOrders(sinceDate?: string, statuses?: boolean, missingMerchantOrderId?: boolean){ 
+        const fieldsToAdd = {
+            ...(sinceDate !== undefined && {"sinceDate": sinceDate}),
+            ...(statuses !== undefined && {"statuses": statuses}),
+            ...(missingMerchantOrderId !== undefined && {"missingMerchantOrderId": missingMerchantOrderId})
+        };
+    
         return await this.directApiCall(
             "orderNumbers",
             {
-                "statuses": statuses,
-                "sinceDate": sinceDate
+                ...fieldsToAdd
             }
         );
     }
-
     /*
         UpdateOrderStatus
         Updates the status of an order. 
