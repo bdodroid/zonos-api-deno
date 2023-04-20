@@ -7,163 +7,124 @@ import { ZonosConfig } from "./types/zonosConfig.ts";
     This will allow you to quickly get started with our API and start creating and managing orders.
 */
 export class Zonos {
-    private config: ZonosConfig;
-    constructor(config: ZonosConfig){
-        this.config = config;
-        if(!config.apiUrl){ 
-            if(!config.apiVersion){ this.config.apiVersion = "2"; }
-            this.config.apiUrl = `https://api.iglobalstores.com/v${this.config.apiVersion?.toString()}`; 
+    constructor(private config: ZonosConfig) {
+        if (!config.apiUrl) {
+            this.config = {
+                ...config,
+                apiVersion: config.apiVersion ?? "2",
+                apiUrl: `https://api.iglobalstores.com/v${config.apiVersion}`,
+            };
         }
     }
 
-    private buildApiUrl(config: ZonosConfig){
-        if(!config.apiVersion){ this.config.apiVersion = "2"; }
-        this.config.apiUrl = `https://api.iglobalstores.com/v${this.config.apiVersion?.toString()}`; 
-        
+    private buildApiUrl(): void {
+        this.config = {
+          ...this.config,
+          apiVersion: this.config.apiVersion ?? "2",
+          apiUrl: `https://api.iglobalstores.com/v${this.config.apiVersion}`,
+        };
     }
 
-    setVersion(version: string | number){
-        this.config.apiVersion = version.toString();
-        this.buildApiUrl(this.config);
+    setVersion(version: string | number): void {
+        this.config = {
+          ...this.config,
+          apiVersion: version.toString(),
+        };
+        this.buildApiUrl();
     }
 
-    async directApiCall(path: string, body: any, method?: string){
-        body.store = this.config.account_number.toString();
-        body.secret = this.config.api_key;
-
-        if(!method){ method = "POST"; }
-
-        const apiResponse = await fetch(`${this.config.apiUrl}/${path}`,{
+    async directApiCall(
+        path: string,
+        body: any,
+        method: string = "POST"
+    ): Promise<any> {
+        const apiResponse = await fetch(`${this.config.apiUrl}/${path}`, {
             headers: {
-              "Content-Type": "application/json"
+            "Content-Type": "application/json",
             },
-            method: method,
-            body: JSON.stringify(body),
-          })
-          .then(result => result.json())
-          .then(data => {
-              
-            return data;
-          })
-          .catch((error: any) => {
+            method,
+            body: JSON.stringify({
+            ...body,
+            store: this.config.account_number.toString(),
+            secret: this.config.api_key,
+            }),
+        })
+            .then((result) => result.json())
+            .catch((error: any) => {
             console.log(error);
             return error;
-          });
-          return apiResponse;
+            });
+        return apiResponse;
     }
 
-    /* begin specific api calls */
+    async getOrder(
+        id: string | number,
+        isReferenceId?: boolean
+    ): Promise<any> {
+        if (!id) return { error: "orderId or referenceId is required" };
 
-    /* 
-        Checkout API 
-        https://docs.zonos.com/api-reference/checkout-api
+        const searchParamiters = isReferenceId
+            ? { referenceId: id.toString() }
+            : { orderId: id.toString() };
 
-        This will allow you to create checkouts,
-        get orders created from checkouts,
-        update the orders status,
-        and add tracking information to those orders,
-    */
-
-    /*
-        GetOrder
-        returns the order information for a specific order.
-        can search based off the zonos order id, or the merchants reference id if one was passed in the checkout create call.
-    */
-    async getOrder(id: string | number, isReferenceId?: boolean){
-        if(!id){ return { "error": "orderId or referenceId is required" }; }
-
-        const searchParamiters: {
-            orderId?: string;
-            referenceId?: string;
-        } = {};
-        
-        if(isReferenceId){ 
-            searchParamiters.referenceId = id.toString();
-        }else{
-            searchParamiters.orderId = id.toString();
-        }
-
-        return await this.directApiCall(
-            "orderDetail",
-            searchParamiters
-        );
+        return await this.directApiCall("orderDetail", searchParamiters);
     }
 
-    /*
-        GetOrders
-        Returns a list of orders that have been created from your checkouts.
-    */
-    async getOrders(sinceDate?: string, statuses?: boolean, missingMerchantOrderId?: boolean){ 
-        const fieldsToAdd = {
-            ...(sinceDate !== undefined && {"sinceDate": sinceDate}),
-            ...(statuses !== undefined && {"statuses": statuses}),
-            ...(missingMerchantOrderId !== undefined && {"missingMerchantOrderId": missingMerchantOrderId})
-        };
-    
-        return await this.directApiCall(
-            "orderNumbers",
-            {
-                ...fieldsToAdd
-            }
-        );
+    async getOrders(
+        sinceDate?: string,
+        statuses?: boolean,
+        missingMerchantOrderId?: boolean
+    ): Promise<any> {
+        return await this.directApiCall("orderNumbers", {
+            sinceDate,
+            statuses,
+            missingMerchantOrderId,
+        });
     }
-    /*
-        UpdateOrderStatus
-        Updates the status of an order. 
-        This statis is reflected in the getOrder result and is shown in the zonos dashboard.
-    */
-    async updateOrderStatus(orderId: string | number, status: string){
-        let statusValue = status;
+
+    async updateOrderStatus(
+        orderId: string | number,
+        status: string
+    ): Promise<any> {
         const statusMap = {
-            "preparing": "VENDOR_PREPARING_ORDER",
-            "ready": "VENDOR_SHIPMENT_READY",
-            "printed": "VENDOR_LABELS_PRINTED_DATE",
-            "cancelled": "VENDOR_CANCELLATION_REQUEST",
-            "completed": "VENDOR_END_OF_DAY_COMPLETE",
-        } as {[key: string]: string};
-
-        if(statusMap[status]){ statusValue = statusMap[status]; }
+            preparing: "VENDOR_PREPARING_ORDER",
+            ready: "VENDOR_SHIPMENT_READY",
+            printed: "VENDOR_LABELS_PRINTED_DATE",
+            cancelled: "VENDOR_CANCELLATION_REQUEST",
+            completed: "VENDOR_END_OF_DAY_COMPLETE",
+        };
+        const statusValue = statusMap[status] ?? status;
 
         this.setVersion(1);
-        // TODO: make status an enum
-        return await this.directApiCall(
-            "updateVendorOrderStatus",
-            {
-                "orderId": orderId.toString(),
-                "orderStatus": statusValue
-            }
-        );
+
+        return await this.directApiCall("updateVendorOrderStatus", {
+            orderId: orderId.toString(),
+            orderStatus: statusValue,
+        });
     }
 
-    /*
-        UpdateOrderNumber
-        Adds a mercahntOrderId to an order.
-        MerchantOrderId is the order id that you use in your system, not the Zonos Order id.
-    */
-    async updateOrderNumber(orderId: string | number, merchantOrderId: string | number){ // working
+    async updateOrderNumber(
+        orderId: string | number,
+        merchantOrderId: string | number
+    ): Promise<any> {
         this.setVersion(1);
-        return await this.directApiCall(
-            "updateMerchantOrderId",
-            {
-                "orderId": orderId.toString(),
-                "merchantOrderId": merchantOrderId.toString()
-            }
-        );
+
+        return await this.directApiCall("updateMerchantOrderId", {
+            orderId: orderId.toString(),
+            merchantOrderId: merchantOrderId.toString(),
+        });
     }
-    
-    /* 
-        UpdateOrderTracking
-        Adds/modifys tracking information to an order.
-    */
-    async updateOrderTracking(orderId: string | number, trackingNumber: string){
+
+    async updateOrderTracking(
+        orderId: string | number,
+        trackingNumber: string
+    ): Promise<any> {
         this.setVersion(2);
-        return await this.directApiCall(
-            "setShipmentTracking",
-            {
-                "orderId": orderId.toString(),
-                "trackingList": [{"numbers": trackingNumber}]
-            }
-        );
+
+        return await this.directApiCall("setShipmentTracking", {
+            orderId: orderId.toString(),
+            trackingList: [{ numbers: trackingNumber }],
+        });
     }
 
     /* 
@@ -198,5 +159,3 @@ export class Zonos {
 
     // TODO: add a verify api call we can make to return if the api key is valid
 }
-
-// export default Zonos;
