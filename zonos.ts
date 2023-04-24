@@ -39,6 +39,7 @@ export class Zonos {
         method: string = "POST"
     ): Promise<any> {
         const apiResponse = await fetch(`${this.config.apiUrl}/${path}`, {
+            mode: 'no-cors',
             headers: {
             "Content-Type": "application/json",
             },
