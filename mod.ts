@@ -2,6 +2,4 @@ export {
     Zonos
 } from "./zonos.ts";
 
-export type{
-    ZonosConfig
-}  from "./types/zonosConfig.ts";
+export * from "./types/types.ts";

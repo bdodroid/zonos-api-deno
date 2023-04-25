@@ -53,13 +53,27 @@ zonos.directApiCall(
 
 
 ### Get Order
-Returns a single orders details
+Returns a single orders details  
+By zonos order id:  
+
 ```typescript
 /* 
     id: string | number
     isReferenceId?: boolean
 */
-zonos.getOrder();
+zonos.getOrder("12312312");
+
+// mock response? 
+```
+
+By refrerence id:
+
+```typescript
+/* 
+    id: string | number
+    isReferenceId?: boolean
+*/
+zonos.getOrder("order_bt23", true);
 
 // mock response? 
 ```
@@ -133,7 +147,7 @@ creates a checkout and returns a url for the customer to access the checkout
     cart: ZonosCart
     countryCode?: string
 */
-zonos.createCheckout({CART_JSON}, "CA");
+zonos.createCheckout(cart, "CA");
 ```
 > cart must be json format with at least the rquired fields shown in the ZonosCart type
 

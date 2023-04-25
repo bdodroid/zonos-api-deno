@@ -1,9 +1,8 @@
-import { ZonosCart } from "./types/zonosCart.ts";
-import { ZonosConfig } from "./types/zonosConfig.ts";
+import { ZonosCart, ZonosConfig } from "./types/types.ts";
 
 /*
     * Zonos API
-    A basic integration with the zonos system. 
+    A basic integration with the zonos rest api. 
     This will allow you to quickly get started with our API and start creating and managing orders.
 */
 export class Zonos {
