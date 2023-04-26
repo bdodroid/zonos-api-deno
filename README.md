@@ -20,13 +20,30 @@ const zonos = new Zonos({
 ```
 > Note: register for an `account_number` and `api_key` at [Zonos]
 
-<br>
+<br />
+<br />
 
 ### Change API version
 ```typescript
 // Values: 1 | 2
 zonos.setVersion(1);
 ```  
+This can also be set directly on the `Zonos` class initialization with: `apiVersion: '1'`.
+
+<br />
+<br />
+
+### Set Cors Proxy 
+
+<i> some endpoints do not support cross origin if called from the front end. In that case you can set a cors proxy to pass the request through.
+
+```typescript
+zonos.setCorsProxy("https://cors.zonos.com/");
+```
+This can also be set directly on the `Zonos` class initialization with: `corsProxy: 'https://cors.zonos.com/'`.
+
+<br />
+<br />
 
 ### Direct API Call  
 

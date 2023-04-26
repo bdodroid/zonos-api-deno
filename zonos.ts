@@ -32,13 +32,21 @@ export class Zonos {
         this.buildApiUrl();
     }
 
+    setCorsProxy(proxy: string): void {
+        this.config = {
+            ...this.config,
+            corsProxy: proxy,
+        };
+    }
+
     async directApiCall(
         path: string,
         body: any,
         method: string = "POST"
     ): Promise<any> {
-        const apiResponse = await fetch(`${this.config.apiUrl}/${path}`, {
-            mode: 'no-cors',
+        const url: string = this.config.corsProxy ? `${this.config.corsProxy}/${this.config.apiUrl}/${path}` : `${this.config.apiUrl}/${path}`;
+
+        const apiResponse = await fetch(url, {
             headers: {
             "Content-Type": "application/json",
             },

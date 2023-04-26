@@ -41,6 +41,7 @@ type ZonosCart = {
     api_key: string;
     apiUrl?: string;
     apiVersion?: string | number;
+    corsProxy?: string;
   };
   
   export type { ZonosCart };
