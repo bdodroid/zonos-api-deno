@@ -25,7 +25,9 @@ const zonos = new Zonos({
 
 ### Change API version
 ```typescript
-// Values: 1 | 2
+/* 
+    Version: string | number 
+*/
 zonos.setVersion(1);
 ```  
 This can also be set directly on the `Zonos` class initialization with: `apiVersion: '1'`.
@@ -41,6 +43,7 @@ This can also be set directly on the `Zonos` class initialization with: `apiVers
 zonos.setCorsProxy("https://cors.zonos.com/");
 ```
 This can also be set directly on the `Zonos` class initialization with: `corsProxy: 'https://cors.zonos.com/'`.
+> Note: http://cors.zonos.com/ is not currently live. Use your own cors proxy for now. 
 
 <br />
 <br />
@@ -56,6 +59,7 @@ zonos.directApiCall(
     "POST|GET|PUT|DELETE"
 );
 ```
+> Note: see [Zonos Docs] for more information on our supported REST endpoints.
 
 <br>  
 
@@ -70,7 +74,9 @@ zonos.directApiCall(
 
 
 ### Get Order
+
 Returns a single orders details  
+
 By zonos order id:  
 
 ```typescript
@@ -79,8 +85,6 @@ By zonos order id:
     isReferenceId?: boolean
 */
 zonos.getOrder("12312312");
-
-// mock response? 
 ```
 
 By refrerence id:
@@ -91,9 +95,11 @@ By refrerence id:
     isReferenceId?: boolean
 */
 zonos.getOrder("order_bt23", true);
-
-// mock response? 
 ```
+<br />
+
+> Additonal Docs: [Order Details]
+
 
 <br>
 
@@ -166,9 +172,11 @@ creates a checkout and returns a url for the customer to access the checkout
 */
 zonos.createCheckout(cart, "CA");
 ```
-> cart must be json format with at least the rquired fields shown in the ZonosCart type
+> cart must be json format with at least the rquired fields shown on the ZonosCart type
 
 
 
 
 [Zonos]: <https://account.zonos.com/register?referrer=deno_api>
+[Zonos Docs]: <https://docs.zonos.com/api-reference/checkout-rest-api>
+[Order Details]: <https://docs.zonos.com/api-reference/checkout-rest-api/retrieve-an-order/order-details>
